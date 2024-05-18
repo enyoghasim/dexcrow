@@ -7,6 +7,7 @@ import session from 'express-session';
 import sessionStore from './config/sessionStore.js';
 import { Types } from 'mongoose';
 import { requireAuth } from './middlewares/auth.m.js';
+import resend, { compileTemplate } from './config/email.js';
 
 const server = async () => {
   const app = express();
@@ -41,8 +42,10 @@ const server = async () => {
 
   app.use('/api', Routes);
 
-  app.get('/', requireAuth, (req, res) => {
-    res.send('Welcome to Account Market API');
+  app.get('/health', (_, res) => {
+    return res.send({
+      status: 'ok',
+    });
   });
 
   connectToDb()

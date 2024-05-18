@@ -1,9 +1,9 @@
-// import { IUser } from '../../models/user.model.js';
+import { IUser } from '../../models/user.model.js';
 
-// declare global {
-//   namespace Express {
-//     export interface Request {
-//       user?: IUser;
-//     }
-//   }
-// }
+declare global {
+  namespace Express {
+    export interface Request {
+      user?: IUser;
+    }
+  }
+}

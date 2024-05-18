@@ -1,6 +1,6 @@
 import { ObjectId, FilterQuery, Types } from 'mongoose';
 import Users, { IUser } from '../models/user.model.js';
-import { LoginSignupRequestBody } from '../types/auth.js';
+import { SignupRequestBody } from '../types/auth.js';
 import bcrypt from 'bcryptjs';
 
 export const userExists = async (selector: string | ObjectId) => {
@@ -23,7 +23,7 @@ export const userExists = async (selector: string | ObjectId) => {
   return user?._id ? true : false;
 };
 
-export const getUser = async (selector: string | ObjectId) => {
+export const getUser = async (selector: string | ObjectId, selectDetails?: string) => {
   const arrOfSelectors: FilterQuery<IUser>[] = [
     {
       email: selector?.toString(),
@@ -38,18 +38,19 @@ export const getUser = async (selector: string | ObjectId) => {
 
   const user = await Users.findOne({
     $or: arrOfSelectors,
-  });
+  }).select(selectDetails ?? '');
 
   return user;
 };
 
-export const createUser = async ({ password, email }: LoginSignupRequestBody) => {
+export const createUser = async ({ password, email, name }: SignupRequestBody) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const user = new Users({
     email,
     password: hashedPassword,
+    name,
   });
 
   await user.save();
