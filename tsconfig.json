@@ -26,8 +26,7 @@
     "target": "ES2021",
     "outDir": "build",
     "lib": ["ES2021", "DOM"],
-    "typeRoots": ["./src/types"],
-    "types": ["node"]
+    "typeRoots": ["./src/types"]
   },
   "exclude": ["node_modules", "build"],
   "include": ["src/*.ts", "src/**/*.ts", "src/index.ts"] // or "src/index.tsx" if you have a .tsx file
