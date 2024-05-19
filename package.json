@@ -28,6 +28,7 @@
     "@types/node": "^20.12.12",
     "@types/redis": "^4.0.11",
     "@types/validator": "^13.11.10",
+    "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
     "env-cmd": "^10.1.0",
@@ -44,6 +45,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "@logtail/node": "^0.4.21",
+    "@logtail/winston": "^0.4.21",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "connect-redis": "^7.1.1",
@@ -56,6 +59,7 @@
     "redis": "^4.6.14",
     "resend": "^3.2.0",
     "tslib": "^2.6.2",
-    "validator": "^13.12.0"
+    "validator": "^13.12.0",
+    "winston": "^3.13.0"
   }
 }

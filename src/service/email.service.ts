@@ -1,4 +1,5 @@
 import resend, { compileTemplate } from '../config/email.js';
+import logger from '../utils/logger.js';
 
 export const sendEmail = async ({
   from = 'Dexcrow <noreply@dexcrow.fun>',
@@ -23,9 +24,9 @@ export const sendEmail = async ({
       html,
     });
 
-    console.log('Email sent:', subject);
+    logger.info('Email sent:', subject);
   } catch (error) {
-    console.error('Error sending email:', error);
+    logger.error('Error sending email:', error);
   }
 };
 

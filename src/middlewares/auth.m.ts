@@ -3,6 +3,7 @@ import sessionStore from '../config/sessionStore.js';
 import redisClient from '../config/redis.js';
 import { sendErrorResponse } from '../utils/response.js';
 import { autenticateSession } from '../service/auth.service.js';
+import logger from '../utils/logger.js';
 
 export const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -14,7 +15,7 @@ export const requireAuth = async (req: Request, res: Response, next: NextFunctio
 
     return sendErrorResponse(res, 401, null, 'Unauthorized');
   } catch (error) {
-    console.log(error);
+    logger.error(error);
 
     return sendErrorResponse(res, 401, null, 'Unauthorized');
   }
@@ -30,7 +31,7 @@ export const loggedOutOnly = async (req: Request, res: Response, next: NextFunct
 
     return next();
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     return sendErrorResponse(res, 401, null, 'Unauthorized');
   }
 };

@@ -8,6 +8,7 @@ import sessionStore from './config/sessionStore.js';
 import { Types } from 'mongoose';
 import { requireAuth } from './middlewares/auth.m.js';
 import resend, { compileTemplate } from './config/email.js';
+import logger from './utils/logger.js';
 
 const server = async () => {
   const app = express();
@@ -50,11 +51,11 @@ const server = async () => {
 
   connectToDb()
     .then(() => {
-      console.log('Connected to DB');
+      logger.info('Connected to DB');
     })
     .then(() => {
       app.listen(process.env.PORT! as string, () => {
-        console.log(`Listening on port http://localhost:${process.env.PORT}`);
+        logger.info(`Listening on port http://localhost:${process.env.PORT}`);
       });
     });
 };

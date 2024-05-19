@@ -5,11 +5,12 @@ import validator from 'validator';
 import { createUser, updateUser, userExists } from '../service/user.service.js';
 import { clearOtp, sendFirstOtp, setUserSession, verifyOtp } from '../service/auth.service.js';
 import Otps from '../models/otp.model.js';
+import logger from '../utils/logger.js';
 
 export const loginUser = async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
   // try {
   // } catch (error) {
-  //   console.log('Error logging in user:', error);
+  //   logger.error('Error logging in user:', error);
   //   return sendErrorResponse(res, 500, null, 'Internal Server Error');
   // }
 };
@@ -70,7 +71,7 @@ export const registerUser = async (req: Request<{}, {}, SignupRequestBody>, res:
     });
     return;
   } catch (error) {
-    console.log('Error registering user:', error);
+    logger.error('Error registering user:', error);
     return sendErrorResponse(res, 500, null, 'Internal Server Error');
   }
 };

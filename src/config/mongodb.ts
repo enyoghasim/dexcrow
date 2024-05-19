@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 // import AdminJS from 'adminjs';
 import { config } from 'dotenv';
+import logger from '../utils/logger.js';
 
 config();
 
@@ -10,7 +11,7 @@ const connectToDb = (): Promise<mongoose.MongooseError | null | any> => {
       const connectDetails = await mongoose.connect(process.env.MONGO_URI! as string);
       return resolve(connectDetails);
     } catch (error: mongoose.MongooseError | any) {
-      console.log(error);
+      logger.error(error);
       reject(error);
     }
   });

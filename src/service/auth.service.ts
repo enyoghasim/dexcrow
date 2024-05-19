@@ -5,6 +5,7 @@ import redisClient from '../config/redis.js';
 import { getUser } from './user.service.js';
 import { sendVerificationOtp } from './email.service.js';
 import bcrypt from 'bcryptjs';
+import logger from '../utils/logger.js';
 
 export const autenticateSession = async (req: Request): Promise<boolean> => {
   const user = req.session?.user;
@@ -79,7 +80,7 @@ export const sendFirstOtp = async ({ email, name }: { email: string; name: strin
       subject: `Your verification OTP - ${otp}`,
     });
   } catch (error) {
-    console.log('Error sending OTP:', error);
+    logger.error('Error sending OTP:', error);
 
     throw new Error('Error sending OTP');
   }
