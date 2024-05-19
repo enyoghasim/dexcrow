@@ -6,6 +6,7 @@ import { getUser } from './user.service.js';
 import { sendVerificationOtp } from './email.service.js';
 import bcrypt from 'bcryptjs';
 import logger from '../utils/logger.js';
+import sessionStore from '../config/sessionStore.js';
 
 export const autenticateSession = async (req: Request): Promise<boolean> => {
   const user = req.session?.user;
@@ -38,6 +39,24 @@ export const autenticateSession = async (req: Request): Promise<boolean> => {
   return true;
 };
 
+export const getUserSession = async (req: Request, userId: string) => {
+  const userSessionID = `user-session:${userId}`;
+
+  const session = await redisClient.get(userSessionID);
+
+  if (!session) {
+    return null;
+  }
+
+  const sessionData = JSON.parse(session);
+
+  if (sessionData?.sessionID !== req.sessionID) {
+    return null;
+  }
+
+  return sessionData;
+};
+
 export const setUserSession = async (req: Request, userID: string) => {
   const userSessionID = `user-session:${userID}`;
 
@@ -48,6 +67,18 @@ export const setUserSession = async (req: Request, userID: string) => {
   await redisClient.set(userSessionID, JSON.stringify(sessionData), {
     EX: 60 * 60 * 24 * 7, // 1 week
   });
+};
+
+export const clearUserSession = async (req: Request, userID: string) => {
+  const userSession = await getUserSession(req, userID);
+
+  if (!userSession) {
+    return;
+  }
+
+  const sessionID = userSession.sessionID;
+
+  await sessionStore.destroy(sessionID);
 };
 
 export const sendFirstOtp = async ({ email, name }: { email: string; name: string }) => {

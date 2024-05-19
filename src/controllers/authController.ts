@@ -2,17 +2,55 @@ import { Request, Response } from 'express';
 import { ActivateAccountRequestBody, LoginRequestBody, SignupRequestBody } from '../types/auth.js';
 import { sendErrorResponse, sendSuccessResponse } from '../utils/response.js';
 import validator from 'validator';
-import { createUser, updateUser, userExists } from '../service/user.service.js';
-import { clearOtp, sendFirstOtp, setUserSession, verifyOtp } from '../service/auth.service.js';
+import { createUser, getUser, updateUser, userExists } from '../service/user.service.js';
+import { clearOtp, clearUserSession, sendFirstOtp, setUserSession, verifyOtp } from '../service/auth.service.js';
 import Otps from '../models/otp.model.js';
 import logger from '../utils/logger.js';
+import bcrypt from 'bcryptjs';
 
 export const loginUser = async (req: Request<{}, {}, LoginRequestBody>, res: Response) => {
-  // try {
-  // } catch (error) {
-  //   logger.error('Error logging in user:', error);
-  //   return sendErrorResponse(res, 500, null, 'Internal Server Error');
-  // }
+  try {
+    // TODO check for account lock and also add 2FA support
+    let { email, password } = req.body;
+    email = email?.trim()?.toLowerCase();
+
+    if (!email || !password) {
+      return sendErrorResponse(res, 400, null, 'Email and password are required');
+    }
+
+    if (!validator.isEmail(email)) {
+      return sendErrorResponse(res, 400, null, 'Invalid email address');
+    }
+
+    if (password.length < 6) {
+      return sendErrorResponse(res, 400, null, 'Invalid password');
+    }
+
+    const user = await getUser(email);
+
+    if (!user) {
+      return sendErrorResponse(res, 400, null, 'Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return sendErrorResponse(res, 400, null, 'Invalid credentials');
+    }
+
+    await clearUserSession(req, user._id);
+
+    req.session.user = {
+      _id: user._id,
+    };
+
+    await setUserSession(req, user._id);
+
+    return sendSuccessResponse(res, 200, null, 'Logged in successfully');
+  } catch (error) {
+    logger.error('Error logging in user:', error);
+    return sendErrorResponse(res, 500, null, 'Internal Server Error');
+  }
 };
 
 export const logoutUser = async () => {};
