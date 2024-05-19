@@ -44,7 +44,9 @@ export const setUserSession = async (req: Request, userID: string) => {
     sessionID: req.sessionID,
   };
 
-  await redisClient.set(userSessionID, JSON.stringify(sessionData));
+  await redisClient.set(userSessionID, JSON.stringify(sessionData), {
+    EX: 60 * 60 * 24 * 7, // 1 week
+  });
 };
 
 export const sendFirstOtp = async ({ email, name }: { email: string; name: string }) => {
@@ -81,4 +83,31 @@ export const sendFirstOtp = async ({ email, name }: { email: string; name: strin
 
     throw new Error('Error sending OTP');
   }
+};
+
+export const verifyOtp = async (user: string, otp: string, type: string) => {
+  const otpDetails = await Otps.findOne({
+    user: user,
+    type,
+    expires: { $gt: new Date() },
+  });
+
+  if (!otpDetails) {
+    return false;
+  }
+
+  const isMatch = await bcrypt.compare(otp, otpDetails.otp);
+
+  if (!isMatch) {
+    return false;
+  }
+
+  return true;
+};
+
+export const clearOtp = async (user: string, type: string) => {
+  await Otps.deleteMany({
+    user,
+    type,
+  });
 };

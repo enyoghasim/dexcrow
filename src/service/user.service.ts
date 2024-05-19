@@ -57,3 +57,27 @@ export const createUser = async ({ password, email, name }: SignupRequestBody) =
 
   return user;
 };
+
+export const updateUser = async (selector: string | ObjectId, update: Partial<IUser>) => {
+  const arrOfSelectors: FilterQuery<IUser>[] = [
+    {
+      email: selector?.toString(),
+    },
+  ];
+
+  if (Types.ObjectId.isValid(selector?.toString())) {
+    arrOfSelectors.push({
+      _id: selector,
+    });
+  }
+
+  const user = await Users.findOneAndUpdate(
+    {
+      $or: arrOfSelectors,
+    },
+    update,
+    { new: true },
+  );
+
+  return user;
+};
