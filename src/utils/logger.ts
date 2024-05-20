@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import winston from 'winston';
 
 config();
+// TODO fix all logging issues in all the places to account for stack
 
 const { combine, timestamp, align, colorize, printf, json } = winston.format;
 

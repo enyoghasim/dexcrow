@@ -7,6 +7,9 @@ import { sendVerificationOtp } from './email.service.js';
 import bcrypt from 'bcryptjs';
 import logger from '../utils/logger.js';
 import sessionStore from '../config/sessionStore.js';
+import VerificationTokens from '../models/verification-tokens.model.js';
+import { generateRandomHexadecimalToken } from '../utils/helpers.js';
+import { ObjectId, Types } from 'mongoose';
 
 export const autenticateSession = async (req: Request): Promise<boolean> => {
   const user = req.session?.user;
@@ -69,16 +72,20 @@ export const setUserSession = async (req: Request, userID: string) => {
   });
 };
 
-export const clearUserSession = async (req: Request, userID: string) => {
-  const userSession = await getUserSession(req, userID);
+export const clearUserSession = async (req: Request, userID: string | null, sessionID?: string) => {
+  if (sessionID && !userID) {
+    await sessionStore.destroy(sessionID);
+  } else {
+    const userSession = await getUserSession(req, userID!);
 
-  if (!userSession) {
-    return;
+    if (!userSession) {
+      return;
+    }
+
+    const sessionID = userSession.sessionID;
+
+    await sessionStore.destroy(sessionID);
   }
-
-  const sessionID = userSession.sessionID;
-
-  await sessionStore.destroy(sessionID);
 };
 
 export const sendFirstOtp = async ({ email, name }: { email: string; name: string }) => {
@@ -117,6 +124,45 @@ export const sendFirstOtp = async ({ email, name }: { email: string; name: strin
   }
 };
 
+export const sendForgotPasswordToken = async ({ email, user, name }: { email: string; name: string; user: string }) => {
+  try {
+    const selector = generateRandomHexadecimalToken();
+    const token = generateRandomHexadecimalToken();
+
+    const salt = await bcrypt.genSalt(10);
+
+    const hashedToken = await bcrypt.hash(token, salt);
+
+    let userObjectID = new Types.ObjectId(user);
+
+    const verificationToken = new VerificationTokens({
+      user: userObjectID,
+      selector,
+      token: hashedToken,
+      type: 'reset-password',
+      expires: new Date(Date.now() + 10 * 60 * 1000),
+    });
+
+    await verificationToken.save();
+
+    const tokenUrl = `${process.env.FRONTEND_URL}/reset-password/${selector}/${token}`;
+
+    sendVerificationOtp({
+      to: email,
+      templateName: 'forgot-password-token',
+      context: {
+        name,
+        token: tokenUrl,
+      },
+      subject: 'Reset your password',
+    });
+  } catch (error) {
+    logger.error('Error sending forgot password token:', error);
+
+    throw new Error('Error sending forgot password token');
+  }
+};
+
 export const verifyOtp = async (user: string, otp: string, type: string) => {
   const otpDetails = await Otps.findOne({
     user: user,
@@ -142,4 +188,42 @@ export const clearOtp = async (user: string, type: string) => {
     user,
     type,
   });
+};
+
+export const clearVerificationTokens = async (user: string, type: string) => {
+  await VerificationTokens.deleteMany({
+    user,
+    type,
+  });
+};
+
+export const verifyToken = async (
+  // user: string,
+  {
+    selector,
+    token,
+    type,
+  }: {
+    selector: string;
+    token: string;
+    type: string;
+  },
+) => {
+  const tokenDetails = await VerificationTokens.findOne({
+    selector,
+    type,
+    expires: { $gt: new Date() },
+  });
+
+  if (!tokenDetails) {
+    return false;
+  }
+
+  const isMatch = await bcrypt.compare(token, tokenDetails.token);
+
+  if (!isMatch) {
+    return false;
+  }
+
+  return tokenDetails.user;
 };
