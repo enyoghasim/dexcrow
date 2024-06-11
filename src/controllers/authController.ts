@@ -24,6 +24,7 @@ import Otps from '../models/otp.model.js';
 import logger from '../utils/logger.js';
 import bcrypt from 'bcryptjs';
 import { IRequest } from '../types/core.js';
+import { initUserAccount } from '../service/payment.service.js';
 
 export const loginUser = async (req: IRequest<LoginRequestBody>, res: Response) => {
   try {
@@ -83,13 +84,14 @@ export const logoutUser = async (req: IRequest<SignupRequestBody>, res: Response
 
 export const registerUser = async (req: IRequest<SignupRequestBody>, res: Response) => {
   try {
-    let { email, password, name } = req.body;
+    let { email, password, firstname, lastname } = req.body;
 
     email = email?.trim()?.toLowerCase();
     password = password?.trim();
-    name = name?.trim();
+    firstname = firstname?.trim();
+    lastname = lastname?.trim();
 
-    if (!email || !password || !name) {
+    if (!email || !password || !firstname || !lastname) {
       return sendErrorResponse(res, 400, null, 'Email, password and name are required');
     }
 
@@ -102,12 +104,18 @@ export const registerUser = async (req: IRequest<SignupRequestBody>, res: Respon
     }
 
     // check if the name is a valid english name and make sure there must be a minimum of 2 names separated by a space and each name must contain at least 2 characters
-    if (!validator.isAlpha(name.replace(/\s/g, '')) || name.split(' ').length < 2 || name.split(' ').some(n => n.length < 2)) {
+    if (
+      !validator.isAlpha(firstname.replace(/\s/g, '')) ||
+      firstname.length < 3 ||
+      !validator.isAlpha(lastname.replace(/\s/g, '')) ||
+      lastname.length < 3
+    ) {
       return sendErrorResponse(res, 400, null, 'Invalid name format');
     }
 
     // make the first letter and the first letter after a space uppercase
-    name = name.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    firstname = firstname.replace(/\w\S*/g, (txt: string) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    lastname = lastname.replace(/\w\S*/g, (txt: string) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
     const userWithEmailExists = await userExists(email);
 
@@ -115,7 +123,7 @@ export const registerUser = async (req: IRequest<SignupRequestBody>, res: Respon
       return sendErrorResponse(res, 400, null, 'User with this email already exists');
     }
 
-    const user = await createUser({ email, password, name });
+    const user = await createUser({ email, password, firstname, lastname });
 
     if (!user) {
       return sendErrorResponse(res, 500, null, 'Internal Server Error');
@@ -131,8 +139,9 @@ export const registerUser = async (req: IRequest<SignupRequestBody>, res: Respon
 
     sendFirstOtp({
       email,
-      name: user.name.split(' ')[0],
+      name: user.firstname.split(' ')[0],
     });
+    initUserAccount(user._id);
     return;
   } catch (error) {
     logger.error('Error registering user:', error);
@@ -194,7 +203,7 @@ export const resendActivationOtp = async (req: Request, res: Response) => {
 
     sendFirstOtp({
       email: req.user?.email!,
-      name: req.user?.name.split(' ')[0]!,
+      name: req.user?.firstname.split(' ')[0]!,
     });
     return;
   } catch (error) {
@@ -228,7 +237,7 @@ export const forgotPassword = async (req: IRequest<ForgotPasswordRequestBody>, r
     sendForgotPasswordToken({
       email: userDetails.email,
       user: userDetails._id,
-      name: userDetails.name.split(' ')[0],
+      name: userDetails.firstname.split(' ')[0],
     });
     return;
   } catch (error) {
@@ -285,6 +294,7 @@ export const resetPassword = async (req: IRequest<ResetPasswordRequestBody, Rese
     }
 
     sendSuccessResponse(res, 200, null, 'Password reset successfully');
+
     await clearVerificationTokens(userDetails._id, 'reset-password');
     return;
   } catch (error) {

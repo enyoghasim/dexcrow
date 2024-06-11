@@ -43,14 +43,15 @@ export const getUser = async (selector: string | ObjectId, selectDetails?: strin
   return user;
 };
 
-export const createUser = async ({ password, email, name }: SignupRequestBody) => {
+export const createUser = async ({ password, email, firstname, lastname }: SignupRequestBody) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const user = new Users({
     email,
     password: hashedPassword,
-    name,
+    firstname,
+    lastname,
   });
 
   await user.save();

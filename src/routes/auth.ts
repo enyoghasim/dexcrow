@@ -12,13 +12,13 @@ import { loggedOutOnly, requireAuth } from '../middlewares/auth.m.js';
 
 const router = Router();
 
-router.post('/register', loggedOutOnly, registerUser);
+router.post('/signup', loggedOutOnly, registerUser);
 
 router.post('/activate-account', requireAuth, activateUserAccount);
 
 router.get('/resend-activation-otp', requireAuth, resendActivationOtp);
 
-router.post('/login', loggedOutOnly, loginUser);
+router.post('/signin', loggedOutOnly, loginUser);
 
 router.get('/logout', requireAuth, logoutUser);
 

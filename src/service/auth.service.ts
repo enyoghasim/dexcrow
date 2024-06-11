@@ -145,7 +145,7 @@ export const sendForgotPasswordToken = async ({ email, user, name }: { email: st
 
     await verificationToken.save();
 
-    const tokenUrl = `${process.env.FRONTEND_URL}/reset-password/${selector}/${token}`;
+    const tokenUrl = `${process.env.FRONTEND_URL}/auth/reset-password/${selector}/${token}`;
 
     sendVerificationOtp({
       to: email,

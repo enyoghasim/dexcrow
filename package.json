@@ -17,6 +17,7 @@
   "devDependencies": {
     "@swc-node/register": "^1.9.1",
     "@swc/core": "^1.5.7",
+    "@types/axios": "^0.14.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/compression": "^1.7.5",
     "@types/connect-redis": "^0.0.23",
@@ -47,6 +48,7 @@
   "dependencies": {
     "@logtail/node": "^0.4.21",
     "@logtail/winston": "^0.4.21",
+    "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "connect-redis": "^7.1.1",

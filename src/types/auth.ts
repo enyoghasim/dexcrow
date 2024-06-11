@@ -4,7 +4,8 @@ export interface LoginRequestBody {
 }
 export interface SignupRequestBody {
   email: string;
-  name: string;
+  firstname: string;
+  lastname: string;
   password: string;
 }
 

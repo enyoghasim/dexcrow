@@ -6,21 +6,29 @@ const lockSchema = new Schema({
 });
 
 export interface IUser extends Document {
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
   role: string;
   isEmailVerified: boolean;
   liftLockAt: Date;
+  nowPaymentsSubAccountId: string;
   locks: Array<{
     type: string;
     unlockTime: Date;
   }>;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userSchema = new Schema<IUser>(
   {
-    name: {
+    firstname: {
+      type: String,
+      required: true,
+    },
+    lastname: {
       type: String,
       required: true,
     },
@@ -28,6 +36,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+    },
+    nowPaymentsSubAccountId: {
+      type: String,
+      default: '',
     },
     password: {
       type: String,

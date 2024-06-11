@@ -20,7 +20,14 @@ const server = async () => {
 
   app.use(
     cors({
-      origin: ['http://localhost:5173', 'http://192.168.1.23:5173', 'http://172.20.10.2:5173', 'https://www.dexcrow.fun', 'https://dexcrow.fun'],
+      origin: [
+        'http://localhost:5173',
+        'http://192.168.1.23:5173',
+        'http://172.20.10.2:5173',
+        'https://www.dexcrow.fun',
+        'http://192.168.29.182:5173',
+        'https://dexcrow.fun',
+      ],
       credentials: true,
     }),
   );
